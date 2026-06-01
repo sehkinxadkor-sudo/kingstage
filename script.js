@@ -624,8 +624,8 @@ async function handleApplicationSubmit(form) {
 
   try {
     await KoraliVault.appendApplication(payload);
-  } catch {
-    showFormStatus(form, "Не удалось сохранить заявку.", "error");
+  } catch (error) {
+    showFormStatus(form, error?.message || "Не удалось сохранить заявку.", "error");
     return;
   }
 

@@ -104,7 +104,7 @@ const KoraliVault = (() => {
   }
 
   async function ensureRsaKeys(aesKey, vaultRecord) {
-    if (vaultRecord?.privateKey && localStorage.getItem(RSA_PUBLIC_KEY)) {
+    if (localStorage.getItem(RSA_PUBLIC_KEY) && vaultRecord?.privateKey) {
       return;
     }
 
@@ -314,15 +314,68 @@ const KoraliVault = (() => {
     localStorage.setItem(INBOX_KEY, JSON.stringify(items));
   }
 
-  async function appendInbox(application) {
-    const publicKey = await importPublicKey();
-    if (!publicKey) {
-      throw new Error("Ключ приёма заявок не настроен. Откройте админку один раз.");
+  async function ensureSubmissionChannel() {
+    if (await importPublicKey()) return true;
+    if (!readVaultRecord()) {
+      const seed = structuredClone(window.__koraliDefaultContent || {});
+      await initFromContent(seed, "korali2026");
+      return Boolean(localStorage.getItem(RSA_PUBLIC_KEY));
     }
-    const encoded = enc.encode(JSON.stringify(application));
-    const encrypted = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, encoded);
+    return false;
+  }
+
+  async function encryptInboxPayload(application, publicKey) {
+    const aesKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+    const iv = randomBytes(12);
+    const cipher = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv },
+      aesKey,
+      enc.encode(JSON.stringify(application))
+    );
+    const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+    const wrappedKey = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, rawAesKey);
+
+    return {
+      v: 2,
+      key: bufferToBase64(wrappedKey),
+      iv: bufferToBase64(iv),
+      data: bufferToBase64(cipher)
+    };
+  }
+
+  async function decryptInboxPayload(item, privateKey) {
+    if (item && typeof item === "object" && item.v === 2) {
+      const rawAesKey = await crypto.subtle.decrypt(
+        { name: "RSA-OAEP" },
+        privateKey,
+        base64ToBuffer(item.key)
+      );
+      const aesKey = await crypto.subtle.importKey("raw", rawAesKey, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      const plain = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: base64ToBuffer(item.iv) },
+        aesKey,
+        base64ToBuffer(item.data)
+      );
+      return JSON.parse(dec.decode(plain));
+    }
+
+    if (typeof item === "string") {
+      const plain = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, base64ToBuffer(item));
+      return JSON.parse(dec.decode(plain));
+    }
+
+    throw new Error("Unknown inbox format");
+  }
+
+  async function appendInbox(application) {
+    const ready = await ensureSubmissionChannel();
+    const publicKey = await importPublicKey();
+    if (!ready || !publicKey) {
+      throw new Error("Сначала один раз откройте админку и войдите с паролем.");
+    }
+
     const inbox = readInbox();
-    inbox.push(bufferToBase64(encrypted));
+    inbox.push(await encryptInboxPayload(application, publicKey));
     writeInbox(inbox);
   }
 
@@ -335,17 +388,12 @@ const KoraliVault = (() => {
     const privateKey = await importPrivateKey(sessionKey, record);
     if (!privateKey) return;
 
-    const content = (await readSecure()) || {};
+    const content = readSecure() || {};
     content.applications = content.applications || [];
 
     for (const item of inbox) {
       try {
-        const decrypted = await crypto.subtle.decrypt(
-          { name: "RSA-OAEP" },
-          privateKey,
-          base64ToBuffer(item)
-        );
-        content.applications.unshift(JSON.parse(dec.decode(decrypted)));
+        content.applications.unshift(await decryptInboxPayload(item, privateKey));
       } catch {
         // skip broken inbox rows
       }
@@ -357,7 +405,7 @@ const KoraliVault = (() => {
 
   async function appendApplication(application) {
     if (isUnlocked()) {
-      const content = (await readSecure()) || {};
+      const content = readSecure() || {};
       content.applications = content.applications || [];
       content.applications.unshift(application);
       await saveSecure(content);
