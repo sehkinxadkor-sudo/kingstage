@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Корали Сцены - набор в команду</title>
+    <meta name="description" content="Открыт набор в творческую команду Корали Сцены. Вакансии, анонсы и форма отправки резюме.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Корали Сцены">
+        <span class="brand-mark">КС</span>
+        <span class="brand-name" data-site-title>Корали Сцены</span>
+      </a>
+      <nav class="main-nav" aria-label="Основное меню">
+        <a href="#announcements">Анонсы</a>
+        <a href="#jobs">Вакансии</a>
+        <a href="#about">О нас</a>
+      </nav>
+      <a class="header-cta" href="#apply">Оставить заявку</a>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content" data-reveal>
+          <p class="eyebrow">Набор в команду</p>
+          <h1 id="hero-title">Создавай будущее вместе с нами. Открыт набор в команду Корали Сцены</h1>
+          <p class="hero-copy">Ищем людей, которым близки сцена, сильные идеи, аккуратная организация и теплое профессиональное общение.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#jobs">Посмотреть вакансии</a>
+            <a class="button button-secondary" href="#timeline">Как проходит набор</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section intro" id="about">
+        <div class="section-heading" data-reveal>
+          <p class="eyebrow">О проекте</p>
+          <h2>Команда для тех, кто любит делать культурные проекты бережно и красиво</h2>
+        </div>
+        <div class="intro-grid">
+          <article data-reveal>
+            <h3>Творчество</h3>
+            <p>Мы соединяем сценические форматы, визуальную культуру и продюсерскую точность.</p>
+          </article>
+          <article data-reveal>
+            <h3>Порядок</h3>
+            <p>Любим ясные процессы, короткую коммуникацию и уважение к времени команды.</p>
+          </article>
+          <article data-reveal>
+            <h3>Рост</h3>
+            <p>Открыты к людям с разным опытом, если есть вкус, внимание к деталям и желание учиться.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="announcements">
+        <div class="section-heading" data-reveal>
+          <p class="eyebrow">Анонсы и новости</p>
+          <h2>Что происходит в команде</h2>
+        </div>
+        <div class="card-grid" data-announcements></div>
+      </section>
+
+      <section class="section jobs-section" id="jobs">
+        <div class="section-heading" data-reveal>
+          <p class="eyebrow">Открытые вакансии</p>
+          <h2>Выберите роль, в которой сможете звучать сильнее</h2>
+        </div>
+        <div class="jobs-list" data-jobs></div>
+      </section>
+
+      <section class="section timeline-section" id="timeline">
+        <div class="section-heading" data-reveal>
+          <p class="eyebrow">Тайм-лайн набора</p>
+          <h2>Что будет после отправки заявки</h2>
+        </div>
+        <ol class="timeline" data-reveal>
+          <li><span>1</span><strong>Получение заявки</strong><p>Мы читаем резюме, портфолио и короткий рассказ о вас.</p></li>
+          <li><span>2</span><strong>Интервью</strong><p>Знакомимся, обсуждаем опыт, ожидания и формат работы.</p></li>
+          <li><span>3</span><strong>Тестовое</strong><p>Даем небольшую задачу, если для роли важно увидеть практику.</p></li>
+          <li><span>4</span><strong>Добро пожаловать</strong><p>Согласуем условия и мягко вводим в командные процессы.</p></li>
+        </ol>
+      </section>
+
+      <section class="section application-section" id="apply">
+        <div class="application-copy" data-reveal>
+          <p class="eyebrow">Заявка</p>
+          <h2>Расскажите о себе. Мы соберем письмо для HR в аккуратном виде</h2>
+          <p>Форма формирует структурированное HTML-письмо. Для реальной отправки подключите серверный обработчик из папки <code>api</code> или CRM-форму Битрикс24.</p>
+        </div>
+        <form class="application-form" data-application-form data-reveal>
+          <label>
+            Имя
+            <input type="text" name="name" autocomplete="name" required placeholder="Как к вам обращаться">
+          </label>
+          <label>
+            Email для ответа
+            <input type="email" name="email" autocomplete="email" required placeholder="name@example.com">
+          </label>
+          <label>
+            Желаемая позиция
+            <select name="position" required data-position-select></select>
+          </label>
+          <label>
+            Портфолио или соцсети
+            <input type="url" name="portfolio" placeholder="https://...">
+          </label>
+          <label class="full">
+            Коротко о себе
+            <textarea name="about" rows="5" required placeholder="Опыт, сильные стороны, почему интересна команда"></textarea>
+          </label>
+          <label class="file-field full">
+            <span>Загрузить резюме PDF/DOCX</span>
+            <input type="file" name="resume" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          </label>
+          <button class="button button-primary full" type="submit">Отправить в один клик</button>
+          <p class="form-note" data-form-status role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span data-site-title>Корали Сцены</span>
+      <a href="admin.html">Админка</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
