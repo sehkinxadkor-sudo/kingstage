@@ -1,13 +1,14 @@
 const DEFAULT_ADMIN_PASSWORD = "korali2026";
 
-const defaultContent = KoraliVault.readPublic() || { /* твоя строчка */ };
+const defaultContent = {
+  schemaVersion: 4,
   settings: {
-    siteTitle: "лох Сцены",
+    siteTitle: "Корали Сцены",
     heroImage: "",
     deliveryTarget: "Bitrix24 / hr@example.com",
     hrEmail: "hr@example.com",
     heroEyebrow: "Набор в команду",
-    heroTitle: "Стань частью постановки. «Короли Сцены» собирают команду",
+    heroTitle: "Стань частью постановки. «Корали Сцены» собирают команду",
     heroCopy: "Это не биржа вакансий, а приглашение в живой театральный проект: на сцену, за кулисы, в продакшн и в творческую мастерскую.",
     aboutEyebrow: "О проекте",
     aboutTitle: "Мы собираем людей, которым хочется прожить постановку изнутри",
