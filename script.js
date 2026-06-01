@@ -2,7 +2,7 @@ const DEFAULT_ADMIN_PASSWORD = "korali2026";
 
 const defaultContent = KoraliVault.readPublic() || { /* твоя строчка */ };
   settings: {
-    siteTitle: "Короли Сцены",
+    siteTitle: "лох Сцены",
     heroImage: "",
     deliveryTarget: "Bitrix24 / hr@example.com",
     hrEmail: "hr@example.com",
