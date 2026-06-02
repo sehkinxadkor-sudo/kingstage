@@ -1,71 +1,79 @@
 <!doctype html>
 <html lang="ru">
-<head>
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Админка — Корали Сцены</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin.css">
-</head>
-<body>
+  </head>
+  <body>
     <header class="site-header">
-        <a class="brand" href="index.html">
-            <span class="brand-mark">КС</span>
-            <span class="brand-name">Корали Сцены</span>
-        </a>
-        <nav class="main-nav" aria-label="Админ меню">
-            <a href="#applications" class="nav-link active" onclick="switchTab('applications')">Заявки</a>
-            <a href="#jobs" class="nav-link" onclick="switchTab('jobs')">Роли (Вакансии)</a>
-            <a href="#announcements" class="nav-link" onclick="switchTab('announcements')">Анонсы</a>
-        </nav>
-        <a class="header-cta" href="index.html">На сайт</a>
+      <a class="brand" href="index.html">
+        <span class="brand-mark">КС</span>
+        <span class="brand-name">Корали Сцены</span>
+      </a>
+      <nav class="main-nav" aria-label="Админ меню">
+        <a href="#announcements" class="nav-link" onclick="switchTab('announcements')">Анонсы</a>
+        <a href="#jobs" class="nav-link" onclick="switchTab('jobs')">Роли</a>
+        <a href="#applications" class="nav-link active" onclick="switchTab('applications')">Заявки</a>
+        <a href="#tasks" class="nav-link" onclick="switchTab('tasks')">Задачи</a>
+      </nav>
+      <a class="header-cta" href="index.html">На сайт</a>
     </header>
 
     <main class="admin-main">
-        <section id="tab-applications" class="admin-section">
-            <h2>Поступившие заявки</h2>
-            <div id="applications-list" class="data-list">
-                <p class="loading">Загрузка заявок...</p>
-            </div>
-        </section>
+      <section id="tab-applications" class="admin-section">
+          <h2>Поступившие заявки</h2>
+          <div id="applications-list" class="data-list">
+              <p class="loading">Загрузка заявок...</p>
+          </div>
+      </section>
 
-        <section id="tab-jobs" class="admin-section" style="display: none;">
-            <h2>Управление ролями и вакансиями</h2>
-            <form id="job-form" class="admin-form" onsubmit="saveJob(event)">
-                <div class="form-group">
-                    <label for="job-title">Название роли:</label>
-                    <input type="text" id="job-title" required placeholder="Например: Актёр, Декоратор">
-                </div>
-                <div class="form-group">
-                    <label for="job-desc">Описание обязанностей:</label>
-                    <textarea id="job-desc" required placeholder="Что нужно будет делать..."></textarea>
-                </div>
-                <button type="submit" class="btn-submit">Добавить роль</button>
-            </form>
-            <h3>Текущие открытые роли</h3>
-            <div id="jobs-list" class="data-list"></div>
-        </section>
+      <section id="tab-jobs" class="admin-section" style="display: none;">
+          <h2>Управление ролями и вакансиями</h2>
+          <form id="job-form" class="admin-form" onsubmit="saveJob(event)">
+              <div class="form-group">
+                  <label for="job-title">Название роли:</label>
+                  <input type="text" id="job-title" required placeholder="Например: Актёр, Декоратор">
+              </div>
+              <div class="form-group">
+                  <label for="job-desc">Описание обязанностей:</label>
+                  <textarea id="job-desc" required placeholder="Что нужно будет делать..."></textarea>
+              </div>
+              <button type="submit" class="btn-submit">Добавить роль</button>
+          </form>
+          <h3>Текущие открытые роли</h3>
+          <div id="jobs-list" class="data-list"></div>
+      </section>
 
-        <section id="tab-announcements" class="admin-section" style="display: none;">
-            <h2>Управление анонсами</h2>
-            <form id="announcement-form" class="admin-form" onsubmit="saveAnnouncement(event)">
-                <div class="form-group">
-                    <label for="ann-title">Заголовок анонса:</label>
-                    <input type="text" id="ann-title" required placeholder="Например: Скоро новая премьера!">
-                </div>
-                <div class="form-group">
-                    <label for="ann-date">Дата события:</label>
-                    <input type="date" id="ann-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="ann-text">Текст анонса:</label>
-                    <textarea id="ann-text" required placeholder="Подробности события..."></textarea>
-                </div>
-                <button type="submit" class="btn-submit">Опубликовать анонс</button>
-            </form>
-            <h3>Архив анонсов</h3>
-            <div id="announcements-list" class="data-list"></div>
-        </section>
+      <section id="tab-announcements" class="admin-section" style="display: none;">
+          <h2>Управление анонсами</h2>
+          <form id="announcement-form" class="admin-form" onsubmit="saveAnnouncement(event)">
+              <div class="form-group">
+                  <label for="ann-title">Заголовок анонса:</label>
+                  <input type="text" id="ann-title" required placeholder="Например: Скоро новая премьера!">
+              </div>
+              <div class="form-group">
+                  <label for="ann-date">Дата события:</label>
+                  <input type="date" id="ann-date" required>
+              </div>
+              <div class="form-group">
+                  <label for="ann-text">Текст анонса:</label>
+                  <textarea id="ann-text" required placeholder="Подробности события..."></textarea>
+              </div>
+              <button type="submit" class="btn-submit">Опубликовать анонс</button>
+          </form>
+          <h3>Архив анонсов</h3>
+          <div id="announcements-list" class="data-list"></div>
+      </section>
+
+      <section id="tab-tasks" class="admin-section" style="display: none;">
+          <h2>Задачи команды</h2>
+          <div class="data-list">
+              <p class="empty-info">Раздел задач находится в разработке.</p>
+          </div>
+      </section>
     </main>
 
     <script>
@@ -84,11 +92,21 @@
 
         // Переключение вкладок
         function switchTab(tabName) {
+            // Прячем все секции
             document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            // Снимаем активный класс со всех ссылок в меню
+            document.querySelectorAll('.main-nav .nav-link').forEach(l => l.classList.remove('active'));
             
-            document.getElementById(`tab-${tabName}`).style.display = 'block';
-            event.target.classList.add('active');
+            // Показываем нужную секцию
+            const targetSection = document.getElementById(`tab-${tabName}`);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // Добавляем активный класс текущей ссылке
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
         }
 
         // Загрузка данных при старте
@@ -100,7 +118,7 @@
                         store[key] = await res.json();
                     }
                 } catch (e) {
-                    console.log(`Файл ${path} пока не создан или пуст, начнем с пустого списка.`);
+                    console.log(`Файл ${path} пока не создан, начнем со свежего списка.`);
                 }
             }
             renderAll();
@@ -213,5 +231,5 @@
         // Инициализация при загрузке страницы
         window.onload = loadData;
     </script>
-</body>
+  </body>
 </html>
