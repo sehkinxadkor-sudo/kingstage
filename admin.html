@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Админка — Корали Сцены</title>
+    <title>Админка - Корали Сцены</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin.css">
   </head>
@@ -13,71 +13,19 @@
         <span class="brand-mark">КС</span>
         <span class="brand-name">Корали Сцены</span>
       </a>
-      <nav class="main-nav" aria-label="Admin menu">
-        <a href="#announcements" class="nav-link" onclick="switchTab('announcements')">Анонсы</a>
-        <a href="#jobs" class="nav-link" onclick="switchTab('jobs')">Роли</a>
-        <a href="#applications" class="nav-link active" onclick="switchTab('applications')">Заявки</a>
-        <a href="#tasks" class="nav-link" onclick="switchTab('tasks')">Задачи</a>
+      <nav class="main-nav" aria-label="Админ меню">
+        <a href="index.html#announcements">Анонсы</a>
+        <a href="index.html#jobs">Роли</a>
+        <a href="#applications">Заявки</a>
+        <a href="#tasks">Задачи</a>
       </nav>
       <a class="header-cta" href="index.html">На сайт</a>
     </header>
-
-    <main class="admin-main">
-      <section id="tab-applications" class="admin-section">
-          <h2>Поступившие заявки</h2>
-          <div id="applications-list" class="data-list">
-              <p class="loading">Загрузка заявок...</p>
-          </div>
-      </section>
-
-      <section id="tab-jobs" class="admin-section" style="display: none;">
-          <h2>Управление ролями</h2>
-          <form id="job-form" class="admin-form" onsubmit="saveJob(event)">
-              <div class="form-group">
-                  <label for="job-title">Название роли:</label>
-                  <input type="text" id="job-title" required placeholder="Например: Актёр">
-              </div>
-              <div class="form-group">
-                  <label for="job-desc">Описание:</label>
-                  <textarea id="job-desc" required placeholder="Обязанности..."></textarea>
-              </div>
-              <button type="submit" class="btn-submit">Добавить роль</button>
-          </form>
-          <h3>Текущие роли</h3>
-          <div id="jobs-list" class="data-list"></div>
-      </section>
-
-      <section id="tab-announcements" class="admin-section" style="display: none;">
-          <h2>Управление анонсами</h2>
-          <form id="announcement-form" class="admin-form" onsubmit="saveAnnouncement(event)">
-              <div class="form-group">
-                  <label for="ann-title">Заголовок:</label>
-                  <input type="text" id="ann-title" required placeholder="Новое событие">
-              </div>
-              <div class="form-group">
-                  <label for="ann-date">Дата:</label>
-                  <input type="date" id="ann-date" required>
-              </div>
-              <div class="form-group">
-                  <label for="ann-text">Текст:</label>
-                  <textarea id="ann-text" required placeholder="Подробности..."></textarea>
-              </div>
-              <button type="submit" class="btn-submit">Опубликовать</button>
-          </form>
-          <h3>Архив анонсов</h3>
-          <div id="announcements-list" class="data-list"></div>
-      </section>
-
-      <section id="tab-tasks" class="admin-section" style="display: none;">
-          <h2>Задачи команды</h2>
-          <div id="tasks-list" class="data-list">
-              <p class="empty-info">Список задач пуст или находится в разработке.</p>
-          </div>
-      </section>
-    </main>
-
+    <main class="admin-main" data-admin></main>
     <script src="vault.js"></script>
     <script src="script.js"></script>
+  </body>
+</html>
 
     <script>
         const CONFIG = {
