@@ -26,3 +26,109 @@
     <script src="script.js"></script>
   </body>
 </html>
+    
+<script>
+        const CONFIG = {
+            saveUrl: '/api/save',
+            files: {
+                applications: 'api/applications.json',
+                jobs: 'api/jobs.json',
+                announcements: 'api/announcements.json'
+            }
+        };
+
+        let store = { applications: [], jobs: [], announcements: [] };
+
+        // Автоматическая загрузка данных с GitHub при открытии админки
+        async function loadData() {
+            for (const [key, path] of Object.entries(CONFIG.files)) {
+                try {
+                    const res = await fetch(`https://raw.githubusercontent.com/sehkinxadkor-sudo/kingstage/main/${path}?t=${Date.now()}`);
+                    if (res.ok) {
+                        store[key] = await res.json();
+                    }
+                } catch (e) {
+                    console.log(`Файл ${path} пока не создан, он появится после первого сохранения.`);
+                }
+            }
+            // Вызываем рендер, если функции отрисовки объявлены в твоих script.js/vault.js
+            if (typeof renderAll === 'function') {
+                renderAll();
+            } else if (typeof renderApplications === 'function') {
+                renderApplications();
+            }
+        }
+
+        // Функция отправки обновлений в репозиторий через Vercel
+        async function gitPush(filename, data, message) {
+            try {
+                const response = await fetch(CONFIG.saveUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: filename,
+                        content: JSON.stringify(data, null, 2),
+                        commitMessage: message
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Данные успешно сохранены на GitHub!');
+                    loadData(); // Перезагружаем списки
+                } else {
+                    alert('Ошибка сохранения: ' + result.error);
+                }
+            } catch (err) {
+                alert('Не удалось связаться с сервером Vercel.');
+                console.error(err);
+            }
+        }
+
+        // Перехватываем отправку формы анонсов (если у формы id="announcement-form")
+        const annForm = document.getElementById('announcement-form');
+        if (annForm) {
+            annForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const title = document.getElementById('ann-title')?.value;
+                const date = document.getElementById('ann-date')?.value;
+                const text = document.getElementById('ann-text')?.value;
+
+                if (title && text) {
+                    store.announcements.push({ title, date, text });
+                    await gitPush(CONFIG.files.announcements, store.announcements, `Добавлен анонс: ${title}`);
+                    annForm.reset();
+                }
+            });
+        }
+
+        // Перехватываем отправку формы ролей (если у формы id="job-form")
+        const jobForm = document.getElementById('job-form');
+        if (jobForm) {
+            jobForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const title = document.getElementById('job-title')?.value;
+                const description = document.getElementById('job-desc')?.value;
+
+                if (title && description) {
+                    store.jobs.push({ title, description });
+                    await gitPush(CONFIG.files.jobs, store.jobs, `Добавлена роль: ${title}`);
+                    jobForm.reset();
+                }
+            });
+        }
+
+        // Функция для удаления элементов (можно вызывать из твоих кнопок "Удалить/Отклонить")
+        // Пример использования в кнопке: onclick="deleteAdminItem('applications', 0)"
+        async function deleteAdminItem(type, index) {
+            if (confirm('Вы уверены, что хотите удалить этот элемент?')) {
+                store[type].splice(index, 1);
+                await gitPush(CONFIG.files[type], store[type], `Удален элемент из ${type} [индекс ${index}]`);
+            }
+        }
+
+        // Запуск подгрузки при загрузке страницы
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+    ```
+
+Вставляй его в самый низ, сохраняй коммит, и бэкенд заработает прямо поверх твоей оригинальной красоты!
