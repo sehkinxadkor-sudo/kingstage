@@ -14,15 +14,241 @@
         <span class="brand-name">Корали Сцены</span>
       </a>
       <nav class="main-nav" aria-label="Админ меню">
-        <a href="index.html#announcements">Анонсы</a>
-        <a href="index.html#jobs">Роли</a>
-        <a href="#applications">Заявки</a>
-        <a href="#tasks">Задачи</a>
+        <a href="#announcements" class="nav-link" onclick="switchTab('announcements')">Анонсы</a>
+        <a href="#jobs" class="nav-link" onclick="switchTab('jobs')">Роли</a>
+        <a href="#applications" class="nav-link active" onclick="switchTab('applications')">Заявки</a>
+        <a href="#tasks" class="nav-link" onclick="switchTab('tasks')">Задачи</a>
       </nav>
       <a class="header-cta" href="index.html">На сайт</a>
     </header>
-    <main class="admin-main" data-admin></main>
+
+    <main class="admin-main">
+      <section id="tab-announcements" class="admin-section" style="display: none;">
+        <div class="section-header">
+          <h2>Управление анонсами</h2>
+        </div>
+        <form id="announcement-form" class="admin-form" onsubmit="saveAnnouncement(event)">
+          <div class="form-group">
+            <label for="ann-title">Заголовок анонса</label>
+            <input type="text" id="ann-title" required placeholder="Введите заголовок...">
+          </div>
+          <div class="form-group">
+            <label for="ann-date">Дата события</label>
+            <input type="date" id="ann-date" required>
+          </div>
+          <div class="form-group">
+            <label for="ann-text">Текст анонса</label>
+            <textarea id="ann-text" required placeholder="Введите описание события..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Опубликовать анонс</button>
+        </form>
+        
+        <div class="current-data-section">
+          <h3>Текущие анонсы</h3>
+          <div id="announcements-list" class="admin-list-container horizontal-scroll">
+            <p class="loading">Загрузка анонсов...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-jobs" class="admin-section" style="display: none;">
+        <div class="section-header">
+          <h2>Управление ролями и вакансиями</h2>
+        </div>
+        <form id="job-form" class="admin-form" onsubmit="saveJob(event)">
+          <div class="form-group">
+            <label for="job-title">Название роли</label>
+            <input type="text" id="job-title" required placeholder="Например: Актёр, Сценарист...">
+          </div>
+          <div class="form-group">
+            <label for="job-desc">Описание обязанностей</label>
+            <textarea id="job-desc" required placeholder="Что нужно будет делать..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Добавить роль</button>
+        </form>
+
+        <div class="current-data-section">
+          <h3>Текущие открытые роли</h3>
+          <div id="jobs-list" class="admin-list-container horizontal-scroll">
+            <p class="loading">Загрузка ролей...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-applications" class="admin-section">
+        <div class="section-header">
+          <h2>Поступившие заявки</h2>
+        </div>
+        <div id="applications-list" class="admin-list-container horizontal-scroll">
+          <p class="loading">Загрузка заявок...</p>
+        </div>
+      </section>
+
+      <section id="tab-tasks" class="admin-section" style="display: none;">
+        <div class="section-header">
+          <h2>Задачи команды</h2>
+        </div>
+        <div class="admin-list-container">
+          <p class="empty-info">Раздел задач находится в разработке.</p>
+        </div>
+      </section>
+    </main>
+
     <script src="vault.js"></script>
     <script src="script.js"></script>
+
+    <script>
+        const CONFIG = {
+            saveUrl: '/api/save',
+            files: {
+                applications: 'api/applications.json',
+                jobs: 'api/jobs.json',
+                announcements: 'api/announcements.json'
+            }
+        };
+
+        let store = { applications: [], jobs: [], announcements: [] };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.main-nav .nav-link').forEach(l => l.classList.remove('active'));
+            
+            const targetSection = document.getElementById(`tab-${tabName}`);
+            if (targetSection) targetSection.style.display = 'block';
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+
+        async function loadData() {
+            for (const [key, path] of Object.entries(CONFIG.files)) {
+                try {
+                    const res = await fetch(`https://raw.githubusercontent.com/sehkinxadkor-sudo/kingstage/main/${path}?t=${Date.now()}`);
+                    if (res.ok) {
+                        store[key] = await res.json();
+                    }
+                } catch (e) {
+                    console.log(`Файл ${path} будет создан при первом сохранении.`);
+                }
+            }
+            renderAll();
+        }
+
+        async function gitPush(filename, data, message) {
+            try {
+                const response = await fetch(CONFIG.saveUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: filename,
+                        content: JSON.stringify(data, null, 2),
+                        commitMessage: message
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Изменения успешно сохранены!');
+                    loadData();
+                } else {
+                    alert('Ошибка сохранения: ' + result.error);
+                }
+            } catch (err) {
+                alert('Не удалось связаться с сервером обновлений.');
+            }
+        }
+
+        function renderAll() {
+            // 1. Рендер Заявок (с кнопками Принять/Отклонить)
+            const appList = document.getElementById('applications-list');
+            if (store.applications.length === 0) {
+                appList.innerHTML = '<p class="empty-info">Новых заявок пока нет.</p>';
+            } else {
+                appList.innerHTML = store.applications.map((app, index) => `
+                    <div class="admin-card">
+                        <div class="card-title">Заявка №${index + 1}</div>
+                        <div class="card-meta">От: ${app.date || 'Неизвестно'}</div>
+                        <div class="card-body">
+                            <p><strong>Имя:</strong> ${app.name}</p>
+                            <p><strong>Контакты:</strong> ${app.contacts}</p>
+                            <p><strong>Роль:</strong> ${app.role}</p>
+                            <p><strong>О себе:</strong> ${app.about}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="deleteItem('applications', ${index}, 'Принята заявка')" class="btn-action accept">Принять</button>
+                            <button onclick="deleteItem('applications', ${index}, 'Отклонена заявка')" class="btn-action decline">Отклонить</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Рендер Ролей (с кнопкой Удалить)
+            const jList = document.getElementById('jobs-list');
+            if (store.jobs.length === 0) {
+                jList.innerHTML = '<p class="empty-info">Список ролей пуст.</p>';
+            } else {
+                jList.innerHTML = store.jobs.map((job, index) => `
+                    <div class="admin-card">
+                        <div class="card-title">${job.title}</div>
+                        <div class="card-body">
+                            <p>${job.description}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="deleteItem('jobs', ${index}, 'Удалена роль')" class="btn-action decline">Удалить роль</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 3. Рендер Анонсов (с кнопкой Удалить)
+            const aList = document.getElementById('announcements-list');
+            if (store.announcements.length === 0) {
+                aList.innerHTML = '<p class="empty-info">Активных анонсов нет.</p>';
+            } else {
+                aList.innerHTML = store.announcements.map((ann, index) => `
+                    <div class="admin-card">
+                        <div class="card-title">${ann.title}</div>
+                        <div class="card-meta">Дата: ${ann.date}</div>
+                        <div class="card-body">
+                            <p>${ann.text}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="deleteItem('announcements', ${index}, 'Удален анонс')" class="btn-action decline">Удалить анонс</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function saveJob(e) {
+            e.preventDefault();
+            const title = document.getElementById('job-title').value;
+            const description = document.getElementById('job-desc').value;
+            
+            store.jobs.push({ title, description });
+            gitPush(CONFIG.files.jobs, store.jobs, `Добавлена роль: ${title}`);
+            e.target.reset();
+        }
+
+        function saveAnnouncement(e) {
+            e.preventDefault();
+            const title = document.getElementById('ann-title').value;
+            const date = document.getElementById('ann-date').value;
+            const text = document.getElementById('ann-text').value;
+
+            store.announcements.push({ title, date, text });
+            gitPush(CONFIG.files.announcements, store.announcements, `Добавлен анонс: ${title}`);
+            e.target.reset();
+        }
+
+        function deleteItem(type, index, msg) {
+            if (confirm('Вы уверены, что хотите выполнить это действие?')) {
+                store[type].splice(index, 1);
+                gitPush(CONFIG.files[type], store[type], `${msg} [Индекс: ${index}]`);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
   </body>
 </html>
