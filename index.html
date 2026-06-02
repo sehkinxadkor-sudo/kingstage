@@ -50,7 +50,9 @@
           <p class="eyebrow">Анонсы и новости</p>
           <h2>Что происходит в команде</h2>
         </div>
-        <div class="card-grid" data-announcements></div>
+        <div class="card-grid" data-announcements>
+            <p class="loading-text">Загрузка актуальных анонсов...</p>
+        </div>
       </section>
 
       <section class="section jobs-section" id="jobs">
@@ -58,7 +60,9 @@
           <p class="eyebrow">Открытые роли</p>
           <h2>Выберите место в постановке, где сможете звучать сильнее</h2>
         </div>
-        <div class="jobs-list" data-jobs></div>
+        <div class="jobs-list" data-jobs>
+            <p class="loading-text">Обновление списка ролей...</p>
+        </div>
       </section>
 
       <section class="section timeline-section" id="timeline">
@@ -90,7 +94,9 @@
           </label>
           <label>
             Интересная роль
-            <select name="position" required data-position-select></select>
+            <select name="position" required data-position-select>
+                <option value="" disabled selected>Загрузка доступных ролей...</option>
+            </select>
           </label>
           <label>
             Портфолио или соцсети
@@ -118,5 +124,96 @@
 
     <script src="vault.js"></script>
     <script src="script.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Загружаем данные из твоего репозитория без кэширования (?t=...)
+        const baseUrl = "https://raw.githubusercontent.com/sehkinxadkor-sudo/kingstage/main/api/";
+        const timestamp = Date.now();
+
+        // 1. Загрузка и вывод анонсов
+        fetch(`${baseUrl}announcements.json?t=${timestamp}`)
+          .then(res => res.ok ? res.json() : [])
+          .then(announcements => {
+            const container = document.querySelector("[data-announcements]");
+            if (!container) return;
+
+            if (announcements.length === 0) {
+              container.innerHTML = '<p class="empty-text">Свежих анонсов пока нет, заглядывайте позже!</p>';
+              return;
+            }
+
+            container.innerHTML = announcements.map(ann => `
+              <article class="card announcement-card">
+                <div class="card-content">
+                  <time class="card-date" datetime="${ann.date}">${formatDate(ann.date)}</time>
+                  <h3 class="card-title">${escapeHtml(ann.title)}</h3>
+                  <p class="card-text">${escapeHtml(ann.text)}</p>
+                </div>
+              </article>
+            `).join('');
+          })
+          .catch(err => {
+            console.error("Ошибка загрузки анонсов:", err);
+            document.querySelector("[data-announcements]").innerHTML = '<p class="empty-text">Анонсы временно недоступны.</p>';
+          });
+
+        // 2. Загрузка и вывод открытых ролей + обновление списка в анкете
+        fetch(`${baseUrl}jobs.json?t=${timestamp}`)
+          .then(res => res.ok ? res.json() : [])
+          .then(jobs => {
+            const jobsContainer = document.querySelector("[data-jobs]");
+            const selectContainer = document.querySelector("[data-position-select]");
+
+            // Рендер карточек ролей на сайте
+            if (jobsContainer) {
+              if (jobs.length === 0) {
+                jobsContainer.innerHTML = '<p class="empty-text">На данный момент все основные роли укомплектованы.</p>';
+              } else {
+                jobsContainer.innerHTML = jobs.map(job => `
+                  <div class="job-item">
+                    <h3 class="job-title">${escapeHtml(job.title)}</h3>
+                    <p class="job-description">${escapeHtml(job.description)}</p>
+                  </div>
+                `).join('');
+              }
+            }
+
+            // Рендер опций в выпадающем списке анкеты
+            if (selectContainer) {
+              if (jobs.length === 0) {
+                selectContainer.innerHTML = '<option value="Общая заявка">Свободная заявка (в резерв)</option>';
+              } else {
+                let options = '<option value="" disabled selected>Выберите интересующую роль</option>';
+                options += jobs.map(job => `<option value="${escapeHtml(job.title)}">${escapeHtml(job.title)}</option>`).join('');
+                options += '<option value="Другое">Другое (расскажу в анкете)</option>';
+                selectContainer.innerHTML = options;
+              }
+            }
+          })
+          .catch(err => {
+            console.error("Ошибка загрузки ролей:", err);
+            if(document.querySelector("[data-jobs]")) {
+              document.querySelector("[data-jobs]").innerHTML = '<p class="empty-text">Список ролей временно недоступен.</p>';
+            }
+          });
+
+        // Вспомогательная функция красивого форматирования даты
+        function formatDate(dateString) {
+          if (!dateString) return "";
+          try {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('ru-RU', options);
+          } catch(e) {
+            return dateString;
+          }
+        }
+
+        // Защита от ввода вредоносного кода пользователями
+        function escapeHtml(str) {
+          return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "";
+        }
+      });
+    </script>
   </body>
 </html>
