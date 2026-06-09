@@ -30,23 +30,25 @@
             file: 'api/content.json'
         };
 
-        // 1. Функция бэкапа данных из браузера на GitHub
+        // 1. Функция бэкапа публичных данных на GitHub
         async function backupToGitHub() {
             try {
-                // Забираем текущее состояние твоей админки из браузера
-                const data = {
-                    published: JSON.parse(localStorage.getItem('korali-published-v1') || '{}'),
-                    vault: JSON.parse(localStorage.getItem('korali-vault-v1') || '{}')
-                };
+                // Берём только публичные данные (роли и анонсы), которые видит главная страница
+                const publishedData = JSON.parse(localStorage.getItem('korali-published-v1') || '{}');
 
-                // Отправляем пакет на сервер Vercel -> GitHub
+                // Проверяем, что данные не пустые, чтобы случайно не стереть GitHub
+                if (!publishedData.roles && !publishedData.announcements) {
+                    return;
+                }
+
+                // Отправляем чистый контент на сервер Vercel -> GitHub
                 const response = await fetch(CONFIG.saveUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         filename: CONFIG.file,
-                        content: JSON.stringify(data, null, 2),
-                        commitMessage: 'Синхронизация данных админ-панели'
+                        content: JSON.stringify(publishedData, null, 2),
+                        commitMessage: 'Обновление контента сайта через админ-панель'
                     })
                 });
 
@@ -61,18 +63,17 @@
             }
         }
 
-        // 2. Функция скачивания данных из GitHub в браузер при входе
+        // 2. Функция загрузки данных из GitHub при входе в админку
         async function loadFromGitHub() {
             try {
                 const res = await fetch(`https://raw.githubusercontent.com/sehkinxadkor-sudo/kingstage/main/${CONFIG.file}?t=${Date.now()}`);
                 if (res.ok) {
-                    const cloud = await res.json();
+                    const cloudData = await res.json();
                     
-                    // Переносим данные в localStorage
-                    if (cloud.published) localStorage.setItem('korali-published-v1', JSON.stringify(cloud.published));
-                    if (cloud.vault) localStorage.setItem('korali-vault-v1', JSON.stringify(cloud.vault));
+                    // Записываем полученные роли и анонсы в публичное хранилище браузера
+                    localStorage.setItem('korali-published-v1', JSON.stringify(cloudData));
                     
-                    // Просим твой script.js полностью обновить карточки на экране
+                    // Заставляем систему перерисовать карточки на экране
                     if (typeof renderAdmin === 'function') {
                         renderAdmin();
                     }
@@ -82,18 +83,17 @@
             }
         }
 
-        // 3. Автоматическое отслеживание действий в админке
+        // 3. Автоматическое отслеживание действий администратора
         window.addEventListener('DOMContentLoaded', () => {
-            // Как только открыли страницу — сразу качаем актуальную базу с GitHub
+            // Как только открыли админку — забираем данные из репозитория
             loadFromGitHub();
 
-            // Следим за отправкой любых форм в админке (роли, анонсы)
+            // Следим за добавлением новых анонсов и ролей через формы
             document.addEventListener('submit', () => {
-                // Ждем 300 миллисекунд, чтобы твой script.js успел обработать форму и сохранить в базу
-                setTimeout(backupToGitHub, 300);
+                setTimeout(backupToGitHub, 400);
             });
             
-            // Следим за нажатиями на кнопки (Удалить, Принять, Отклонить)
+            // Следим за удалением элементов (кнопки удаления анонсов или ролей)
             document.addEventListener('click', (e) => {
                 const target = e.target;
                 if (
@@ -101,8 +101,7 @@
                     target.hasAttribute('data-announcement-delete') || 
                     target.closest('[data-announcement-delete]')
                 ) {
-                    // Ждем, пока script.js удалит элемент, и обновляем GitHub
-                    setTimeout(backupToGitHub, 300);
+                    setTimeout(backupToGitHub, 400);
                 }
             });
         });
